@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tra cứu mã tỉnh - xã phường</title>
+  <style>
+    :root {
+      --bg-1: #0f172a;
+      --bg-2: #111827;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.14);
+      --text: #e5eefb;
+      --muted: #9fb0cc;
+      --accent: #60a5fa;
+      --accent-2: #22d3ee;
+      --success: #34d399;
+      --danger: #fb7185;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 28%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .background-glow::before,
+    .background-glow::after {
+      content: "";
+      position: fixed;
+      width: 380px;
+      height: 380px;
+      border-radius: 999px;
+      filter: blur(90px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    .background-glow::before {
+      top: -120px;
+      left: -120px;
+      background: #38bdf8;
+    }
+
+    .background-glow::after {
+      bottom: -120px;
+      right: -120px;
+      background: #14b8a6;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 64px;
+    }
+
+    .hero {
+      padding: 32px;
+      border: 1px solid var(--card-border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(16px);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.7s ease;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      color: #dbeafe;
+      background: rgba(96, 165, 250, 0.14);
+      border: 1px solid rgba(96, 165, 250, 0.25);
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      margin: 16px 0 10px;
+      font-size: clamp(30px, 5vw, 54px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 26px;
+    }
+
+    .stat-card,
+    .panel,
+    .result-card {
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card { padding: 18px 20px; }
+    .stat-label { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+    .stat-value { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 22px;
+      margin-top: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 22px;
+      animation: fadeUp 0.85s ease;
+    }
+
+    .panel h2 {
+      margin: 0 0 18px;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 14px;
+      color: #dbe7ff;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .input, .select {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(15, 23, 42, 0.55);
+      color: var(--text);
+      outline: none;
+      transition: all 0.25s ease;
+      font-size: 15px;
+    }
+
+    .input:focus, .select:focus {
+      border-color: rgba(96, 165, 250, 0.8);
+      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn, .action-btn, .mini-btn {
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-weight: 700;
+    }
+
+    .tab-btn {
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      color: #dce9ff;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(96,165,250,0.9), rgba(34,211,238,0.85));
+      color: #08111f;
+      transform: translateY(-1px);
+      box-shadow: 0 14px 34px rgba(34, 211, 238, 0.22);
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #06101d;
+      font-size: 15px;
+      box-shadow: 0 14px 30px rgba(34, 211, 238, 0.22);
+    }
+
+    .action-btn:hover, .mini-btn:hover, .tab-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    .action-btn:active, .mini-btn:active, .tab-btn:active {
+      transform: translateY(0);
+    }
+
+    .helper {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 10px;
+    }
+
+    .result-topbar {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .result-topbar p { margin: 0; color: var(--muted); }
+
+    .mini-btn {
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .results { display: grid; gap: 14px; }
+
+    .result-card {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      animation: fadeUp 0.35s ease;
+    }
+
+    .result-title {
+      margin: 0 0 8px;
+      font-size: 19px;
+      letter-spacing: -0.02em;
+    }
+
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .code-chip {
+      min-width: 112px;
+      text-align: center;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(52, 211, 153, 0.12);
+      color: #b9ffe1;
+      border: 1px solid rgba(52, 211, 153, 0.22);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+    }
+
+    .empty-state, .alert {
+      border-radius: 18px;
+      padding: 18px;
+      line-height: 1.7;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px dashed rgba(255,255,255,0.12);
+      text-align: center;
+    }
+
+    .alert {
+      background: rgba(251, 113, 133, 0.09);
+      color: #ffd2da;
+      border: 1px solid rgba(251, 113, 133, 0.22);
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .container { width: min(100% - 20px, 1200px); padding-top: 20px; }
+      .hero, .panel { padding: 18px; }
+      .search-row { grid-template-columns: 1fr; }
+      .result-card { grid-template-columns: 1fr; }
+      .code-chip { justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-glow"></div>
+  <div class="container">
+    <section class="hero">
+      <div class="badge">✨ Website tra cứu mã hành chính</div>
+      <h1>Tra cứu mã tỉnh, thành phố và xã phường</h1>
+      <p class="subtitle">
+        Giao diện hiện đại, tìm kiếm nhanh, lọc theo tỉnh thành và tự động đọc dữ liệu từ file
+        <strong>maxa_clean.json</strong> đặt cùng thư mục với <strong>index.html</strong>.
+      </p>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label">Số tỉnh/thành đã nạp</div>
+          <div class="stat-value" id="provinceCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Số xã/phường đã nạp</div>
+          <div class="stat-value" id="wardCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Kết quả đang hiển thị</div>
+          <div class="stat-value" id="resultCount">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <aside class="panel">
+        <h2>Bộ lọc tra cứu</h2>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-mode="province">Tra mã tỉnh/thành</button>
+          <button class="tab-btn" data-mode="ward">Tra mã xã/phường</button>
+        </div>
+
+        <div class="field">
+          <label for="provinceSelect">Tỉnh / thành phố</label>
+          <select class="select" id="provinceSelect">
+            <option value="">Tất cả tỉnh/thành phố</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="wardKeyword">Từ khóa xã / phường</label>
+          <input class="input" id="wardKeyword" type="text" placeholder="Ví dụ: Ea, Hòa, Buôn Ma Thuột..." />
+        </div>
+
+        <div class="field search-row">
+          <div>
+            <label for="codeKeyword">Tìm theo mã</label>
+            <input class="input" id="codeKeyword" type="text" placeholder="Ví dụ: 66, 24133..." />
+          </div>
+          <div>
+            <label for="nameKeyword">Tìm theo tên</label>
+            <input class="input" id="nameKeyword" type="text" placeholder="Ví dụ: Đắk Lắk, Hà Nội..." />
+          </div>
+        </div>
+
+        <button class="action-btn" id="searchBtn">Tra cứu ngay</button>
+        <div class="helper">Bạn có thể gõ tên không dấu hoặc có dấu. Kết quả thay đổi ngay theo bộ lọc.</div>
+      </aside>
+
+      <main class="panel">
+        <div class="alert" id="alertBox"></div>
+        <div class="result-topbar">
+          <p id="modeLabel">Đang ở chế độ tra cứu mã tỉnh / thành phố.</p>
+          <button class="mini-btn" id="resetBtn">Xóa bộ lọc</button>
+        </div>
+        <div class="results" id="results"></div>
+        <div class="footer-note">
+          Hãy đặt <strong>index.html</strong> và <strong>maxa_clean.json</strong> cùng một thư mục trên GitHub Pages.
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <script>
+    const DEFAULT_JSON_PATH = './maxa_clean.json';
+
+    const provinceCountEl = document.getElementById('provinceCount');
+    const wardCountEl = document.getElementById('wardCount');
+    const resultCountEl = document.getElementById('resultCount');
+    const provinceSelect = document.getElementById('provinceSelect');
+    const codeKeyword = document.getElementById('codeKeyword');
+    const nameKeyword = document.getElementById('nameKeyword');
+    const wardKeyword = document.getElementById('wardKeyword');
+    const searchBtn = document.getElementById('searchBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultsEl = document.getElementById('results');
+    const alertBox = document.getElementById('alertBox');
+    const modeLabel = document.getElementById('modeLabel');
+    const tabButtons = [...document.querySelectorAll('.tab-btn')];
+
+    let lookupMode = 'province';
+    let provinces = [];
+    let wards = [];
+
+    function normalizeText(str) {
+      return (str || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .trim();
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[m]));
+    }
+
+    function buildDataMaps(dataObj) {
+      const provinceArr = [];
+      const wardArr = [];
+
+      Object.entries(dataObj).forEach(([provinceCode, provinceData]) => {
+        if (!provinceData || typeof provinceData !== 'object') return;
+
+        const provinceName = provinceData.name || `Mã ${provinceCode}`;
+        const provinceItem = {
+          code: String(provinceCode),
+          name: provinceName,
+          wardCount: Array.isArray(provinceData.wards) ? provinceData.wards.length : 0
+        };
+        provinceArr.push(provinceItem);
+
+        if (Array.isArray(provinceData.wards)) {
+          provinceData.wards.forEach((ward) => {
+            if (!ward) return;
+            wardArr.push({
+              code: String(ward.code || ''),
+              name: String(ward.name || ''),
+              provinceCode: String(provinceCode),
+              provinceName
+            });
+          });
+        }
+      });
+
+      provinceArr.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+      wardArr.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+
+      return { provinceArr, wardArr };
+    }
+
+    function populateProvinceSelect() {
+      provinceSelect.innerHTML = '<option value="">Tất cả tỉnh/thành phố</option>';
+      provinces.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.code;
+        option.textContent = `${item.name} (${item.code})`;
+        provinceSelect.appendChild(option);
+      });
+    }
+
+    function updateStats(resultLength = 0) {
+      provinceCountEl.textContent = provinces.length.toLocaleString('vi-VN');
+      wardCountEl.textContent = wards.length.toLocaleString('vi-VN');
+      resultCountEl.textContent = resultLength.toLocaleString('vi-VN');
+    }
+
+    function showAlert(message = '', isError = true) {
+      if (!message) {
+        alertBox.style.display = 'none';
+        alertBox.textContent = '';
+        return;
+      }
+      alertBox.style.display = 'block';
+      alertBox.textContent = message;
+      alertBox.style.background = isError ? 'rgba(251, 113, 133, 0.09)' : 'rgba(52, 211, 153, 0.10)';
+      alertBox.style.borderColor = isError ? 'rgba(251, 113, 133, 0.22)' : 'rgba(52, 211, 153, 0.22)';
+      alertBox.style.color = isError ? '#ffd2da' : '#c7ffe8';
+    }
+
+    function renderResults(items) {
+      updateStats(items.length);
+
+      if (!items.length) {
+        resultsEl.innerHTML = '<div class="empty-state">Không tìm thấy dữ liệu phù hợp. Hãy đổi từ khóa hoặc chọn tỉnh/thành khác.</div>';
+        return;
+      }
+
+      resultsEl.innerHTML = items.map((item) => {
+        if (lookupMode === 'province') {
+          return `
+            <article class="result-card">
+              <div>
+                <h3 class="result-title">${escapeHtml(item.name)}</h3>
+                <div class="result-meta">
+                  <span>${item.wardCount} xã/phường</span>
+                  <span>Tỉnh/thành phố</span>
+                </div>
+              </div>
+              <div class="code-chip">${escapeHtml(item.code)}</div>
+            </article>
+          `;
+        }
+
+        return `
+          <article class="result-card">
+            <div>
+              <h3 class="result-title">${escapeHtml(item.name)}</h3>
+              <div class="result-meta">
+                <span>${escapeHtml(item.provinceName)}</span>
+                <span>Mã tỉnh: ${escapeHtml(item.provinceCode)}</span>
+              </div>
+            </div>
+            <div class="code-chip">${escapeHtml(item.code)}</div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function applyFilters() {
+      showAlert('');
+      const provinceValue = provinceSelect.value;
+      const codeValue = normalizeText(codeKeyword.value);
+      const nameValue = normalizeText(nameKeyword.value);
+      const wardValue = normalizeText(wardKeyword.value);
+
+      if (lookupMode === 'province') {
+        const filtered = provinces.filter((item) => {
+          const okProvince = !provinceValue || item.code === provinceValue;
+          const okCode = !codeValue || normalizeText(item.code).includes(codeValue);
+          const okName = !nameValue || normalizeText(item.name).includes(nameValue);
+          return okProvince && okCode && okName;
+        });
+        renderResults(filtered);
+        return;
+      }
+
+      const filtered = wards.filter((item) => {
+        const okProvince = !provinceValue || item.provinceCode === provinceValue;
+        const okCode = !codeValue || normalizeText(item.code).includes(codeValue);
+        const okName = !nameValue
+          || normalizeText(item.provinceName).includes(nameValue)
+          || normalizeText(item.name).includes(nameValue);
+        const okWard = !wardValue || normalizeText(item.name).includes(wardValue);
+        return okProvince && okCode && okName && okWard;
+      });
+
+      renderResults(filtered);
+    }
+
+    function setMode(mode) {
+      lookupMode = mode;
+      tabButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === mode));
+      modeLabel.textContent = mode === 'province'
+        ? 'Đang ở chế độ tra cứu mã tỉnh / thành phố.'
+        : 'Đang ở chế độ tra cứu mã xã / phường theo tỉnh thành.';
+      applyFilters();
+    }
+
+    function resetFilters() {
+      provinceSelect.value = '';
+      codeKeyword.value = '';
+      nameKeyword.value = '';
+      wardKeyword.value = '';
+      applyFilters();
+    }
+
+    function loadData(dataObj, sourceLabel = 'maxa_clean.json') {
+      const { provinceArr, wardArr } = buildDataMaps(dataObj);
+      provinces = provinceArr;
+      wards = wardArr;
+      populateProvinceSelect();
+      applyFilters();
+      showAlert(`Đã nạp dữ liệu thành công từ ${sourceLabel}.`, false);
+    }
+
+    async function bootstrapData() {
+      try {
+        const response = await fetch(DEFAULT_JSON_PATH + '?v=' + Date.now(), {
+          method: 'GET',
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        loadData(data, DEFAULT_JSON_PATH);
+      } catch (error) {
+        console.error('Lỗi tải JSON:', error);
+        provinces = [];
+        wards = [];
+        updateStats(0);
+        resultsEl.innerHTML = `
+          <div class="empty-state">
+            Không thể tải dữ liệu từ file <strong>${escapeHtml(DEFAULT_JSON_PATH)}</strong>.<br />
+            Hãy kiểm tra rằng file JSON này được đặt cùng thư mục với <strong>index.html</strong> trên GitHub Pages.
+          </div>
+        `;
+        showAlert('Không tải được file JSON tự động. Kiểm tra đúng tên file, đúng thư mục và chờ GitHub Pages cập nhật.');
+      }
+    }
+
+    searchBtn.addEventListener('click', applyFilters);
+    resetBtn.addEventListener('click', resetFilters);
+    codeKeyword.addEventListener('input', applyFilters);
+    nameKeyword.addEventListener('input', applyFilters);
+    wardKeyword.addEventListener('input', applyFilters);
+    provinceSelect.addEventListener('change', applyFilters);
+    tabButtons.forEach((btn) => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+
+    bootstrapData();
+  </script>
+</body>
+</html>
